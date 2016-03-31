@@ -30,6 +30,7 @@ worker:
     volumes:
       - "/srv/data:/srv/data/"
       - "/srv/logs/worker:/var/log"
+      - ".:/aleph"
     environment:
       C_FORCE_ROOT: true
       ALEPH_ELASTICSEARCH_URI: http://elasticsearch:9200/
