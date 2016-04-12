@@ -36,7 +36,9 @@ class BlacklightCrawler(Crawler):
     def crawl_document(self, base_url, id):
         source_url = base_url + 'catalog/'+ id + '.json'
         response = requests.get(source_url)
-        if response.status_code >= 500:
+        try:
+            response.raise_for_status()
+        except:
             log.warning('Failed to load: %r', source_url)
             time.sleep(10)
             return True
@@ -62,7 +64,9 @@ class BlacklightCrawler(Crawler):
         page_url = base_url + 'catalog.json?page='+ str(page_number)
         log.info('crawling url: {}'.format(page_url))
         response = requests.get(page_url)
-        if response.status_code >= 500:
+        try:
+            response.raise_for_status()
+        except:
             log.warning('Failed to load: %r', page_url)
             return True
 
@@ -75,7 +79,9 @@ class BlacklightCrawler(Crawler):
     def get_page_count(self, base_url):
         page_url = base_url + 'catalog.json'
         response = requests.get(page_url)
-        if response.status_code >= 500:
+        try:
+            response.raise_for_status()
+        except:
             log.warning('Failed to load: %r', page_url)
             return 0
 
