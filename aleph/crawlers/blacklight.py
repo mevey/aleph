@@ -38,7 +38,6 @@ class BlacklightCrawler(Crawler):
         response = requests.get(source_url)
         if response.status_code >= 500:
             log.warning('Failed to load: %r', source_url)
-            time.sleep(10)
             return True
 
         response = response.json()
@@ -50,7 +49,6 @@ class BlacklightCrawler(Crawler):
             try:
                 meta[attr] = doc[attr]
             except Exception,e:
-                pass
                 log.warning('Missing attribute:%s from %r', attr, source_url) #Probable key error
 
         content = doc[self.attributes['content']]
@@ -92,7 +90,7 @@ class BlacklightCrawler(Crawler):
             page_count = self.get_page_count(base_url)
             print "Pages: {}".format(page_count)
             page_number = 1
-            while (page_number <= page_count) and (page_number <= 2):
+            while (page_number <= page_count):
                 if self.failed_articles >= FAILED_LIMIT:
                     log.warning('Failure limit reach: {}'.format(FAILED_LIMIT))
                     break
