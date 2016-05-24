@@ -11,7 +11,7 @@ Service Integrations
 ----------------------
 
 - PostgreSQL (tested with v.9.5.2)
-- ElasticSearch
+- ElasticSearch (v. 2.2+)
 - RabbitMQ or Amazon SQS
 
 
