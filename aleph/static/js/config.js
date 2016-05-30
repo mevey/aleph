@@ -1,14 +1,17 @@
-var aleph = angular.module('aleph', ['ngRoute', 'ngAnimate', 'ngSanitize', 'ui.bootstrap', 'pdf']);
+var aleph = angular.module('aleph', ['ngRoute', 'ngAnimate', 'ngSanitize', 'ui.bootstrap',
+                                     'angular-loading-bar', 'truncate', 'pdf']);
 
-aleph.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+aleph.config(['$routeProvider', '$locationProvider', '$compileProvider', 'cfpLoadingBarProvider',
+    function($routeProvider, $locationProvider, $compileProvider, cfpLoadingBarProvider) {
 
   $routeProvider.when('/search', {
     templateUrl: 'templates/search.html',
     controller: 'SearchCtrl',
-    reloadOnSearch: true,
+    reloadOnSearch: false,
     loginRequired: false,
     resolve: {
-      'data': loadSearch
+      'data': loadSearch,
+      'metadata': loadMetadata
     }
   });
 
@@ -19,7 +22,8 @@ aleph.config(['$routeProvider', '$locationProvider', function($routeProvider, $l
     loginRequired: false,
     resolve: {
       'data': loadTabular,
-      'metadata': loadMetadata
+      'metadata': loadMetadata,
+      'references': loadReferences
     }
   });
 
@@ -31,17 +35,19 @@ aleph.config(['$routeProvider', '$locationProvider', function($routeProvider, $l
     resolve: {
       'data': loadText,
       'metadata': loadMetadata,
-      'pages': loadPagesQuery
+      'pages': loadPagesQuery,
+      'references': loadReferences
     }
   });
 
   $routeProvider.when('/entities', {
     templateUrl: 'templates/entity_index.html',
     controller: 'EntitiesIndexCtrl',
-    reloadOnSearch: true,
+    reloadOnSearch: false,
     loginRequired: false,
     resolve: {
-      'data': loadEntitiesIndex
+      'data': loadEntitiesIndex,
+      'metadata': loadMetadata
     }
   });
 
@@ -50,7 +56,19 @@ aleph.config(['$routeProvider', '$locationProvider', function($routeProvider, $l
     controller: 'EntitiesReviewCtrl',
     reloadOnSearch: true,
     loginRequired: false,
-    resolve: {}
+    resolve: {
+      'metadata': loadMetadata
+    }
+  });
+
+  $routeProvider.when('/entities/bulk', {
+    templateUrl: 'templates/entity_bulk.html',
+    controller: 'EntitiesBulkCtrl',
+    reloadOnSearch: true,
+    loginRequired: false,
+    resolve: {
+      'metadata': loadMetadata
+    }
   });
 
   $routeProvider.when('/crawlers', {
@@ -60,6 +78,17 @@ aleph.config(['$routeProvider', '$locationProvider', function($routeProvider, $l
     loginRequired: false,
     resolve: {
       'crawlers': loadCrawlers
+    }
+  });
+
+  $routeProvider.when('/crawlers/logs', {
+    templateUrl: 'templates/crawlers_states.html',
+    controller: 'CrawlersStatesCtrl',
+    reloadOnSearch: true,
+    loginRequired: false,
+    resolve: {
+      // 'crawlers': loadCrawlers,
+      'states': loadCrawlerStates
     }
   });
 
@@ -85,9 +114,13 @@ aleph.config(['$routeProvider', '$locationProvider', function($routeProvider, $l
     reloadOnSearch: false,
     loginRequired: false,
     resolve: {
-      'data': loadHome
+      'data': loadHome,
+      'metadata': loadMetadata
     }
   });
 
   $locationProvider.html5Mode(true);
+  $compileProvider.debugInfoEnabled(false);
+  cfpLoadingBarProvider.includeSpinner = false;
+  cfpLoadingBarProvider.latencyThreshold = 100;
 }]);

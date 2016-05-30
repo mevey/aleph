@@ -46,15 +46,17 @@ class Entity(db.Model, UuidModel, SoftDeleteModel, SchemaModel):
     collections = db.relationship(Collection, secondary=collection_entity_table,  # noqa
                                   backref=db.backref('entities', lazy='dynamic'))  # noqa
 
-    def delete(self):
+    def delete(self, deleted_at=None):
         from aleph.model import Reference
         q = db.session.query(Reference)
         q = q.filter(Reference.entity_id == self.id)
         q.delete(synchronize_session='fetch')
+
+        deleted_at = deleted_at or datetime.utcnow()
         for alert in self.alerts:
-            alert.delete()
+            alert.delete(deleted_at=deleted_at)
         self.state = self.STATE_DELETED
-        super(Entity, self).delete()
+        super(Entity, self).delete(deleted_at=deleted_at)
 
     def update(self, data, merge=False):
         self.schema_update(data, merge=merge)
@@ -243,7 +245,7 @@ class Entity(db.Model, UuidModel, SoftDeleteModel, SchemaModel):
         terms = [' %s ' % normalize_strong(t) for t in self.terms]
         regex_terms = set()
         for term in terms:
-            if len(term) < 5:
+            if len(term) < 4 or len(term) > 120:
                 continue
             contained = False
             for other in terms:
@@ -275,7 +277,7 @@ class EntityAsset(Entity):
 
     valuation = db.Column(db.Integer, nullable=True)
     valuation_currency = db.Column(db.Unicode(100), nullable=True)
-    valuation_date = db.Column(db.Date, nullable=True)
+    valuation_date = db.Column(db.Unicode, nullable=True)
 
 
 class EntityLegalPerson(Entity):
@@ -324,8 +326,8 @@ class EntityPerson(EntityLegalPerson):
     }
 
     gender = db.Column(db.Unicode, nullable=True)
-    birth_date = db.Column(db.Date, nullable=True)
-    death_date = db.Column(db.Date, nullable=True)
+    birth_date = db.Column(db.Unicode, nullable=True)
+    death_date = db.Column(db.Unicode, nullable=True)
 
     residential_address_id = db.Column(db.String(32), db.ForeignKey('entity_address.id'))  # noqa
     residential_address = db.relationship('EntityAddress',
@@ -340,8 +342,8 @@ class EntityOrganization(EntityLegalPerson):
     }
 
     classification = db.Column(db.Unicode, nullable=True)
-    founding_date = db.Column(db.Date, nullable=True)
-    dissolution_date = db.Column(db.Date, nullable=True)
+    founding_date = db.Column(db.Unicode, nullable=True)
+    dissolution_date = db.Column(db.Unicode, nullable=True)
     current_status = db.Column(db.Unicode, nullable=True)
 
     registered_address_id = db.Column(db.String(32), db.ForeignKey('entity_address.id'))  # noqa

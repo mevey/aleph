@@ -19,7 +19,7 @@
         </ul>
       </div>
       <div class="btn-group" uib-dropdown dropdown-append-to-body>
-        <a href="/#/search" class="btn btn-primary">
+        <a href="/search" class="btn btn-primary">
           <i class="fa fa-times"></i>
           Clear search
         </a>
@@ -42,43 +42,26 @@
 </div>
 <div class="row">
   <div class="col-md-8">
-    <div class="alert alert-danger" role="alert" ng-if="error">
+    <div class="alert alert-danger" role="alert" ng-if="result.error">
       <strong>An error occurred while running your search.</strong>
-      {{::error.info.reason || error.message}}
+      {{::result.error.info.reason || result.error.message}}
     </div>
-    <div class="alert alert-suggest" ng-if="showSuggest()">
-      Looking for 
-      <a ng-click="setEntity(suggestEntity)">
-        <entity-icon schema="suggestEntity.$schema"></entity-icon> {{suggestEntity.name}}</a>?
-    </div>
-    <div class="alert alert-suggest" ng-if="showCreate() && authz.logged_in()">
-      Do you want to track <strong>{{originalText}}</strong>? Set up a 
-      <a ng-click="createQueryEntity('/entity/person.json#')">
-        <entity-icon schema="'/entity/person.json#'"></entity-icon> Person</a>,
-      <a ng-click="createQueryEntity('/entity/company.json#')">
-        <entity-icon schema="'/entity/company.json#'"></entity-icon> Company</a>,
-      or
-      <a ng-click="createQueryEntity('/entity/organization.json#')">
-        <entity-icon schema="'/entity/organization.json#'"></entity-icon> Organization</a>
-      to receive email updates.
-    </div>
-    <div class="alert alert-suggest" ng-if="showCreate() && !authz.logged_in()">
-      Want to keep track of <strong>{{originalText}}</strong>?
-      <a ng-href="/api/1/sessions/login" target="_self">Sign in</a> to create email alerts.
-    </div>
+
+    <search-entity-suggest query="query"></search-entity-suggest>
+
     <div>
       <div ng-repeat="doc in result.results">
-        <search-result doc="doc" result="result"></search-result>
+        <search-result doc="doc" result="result" query="query"></search-result>
       </div>
       <div class="bottom-pager">
         <div class="pull-right">
           <response-pager response="result" load="loadOffset(offset)"></response-pager>
         </div>
-        <div class="total" ng-if="result.limit > 0 && !result.total">
+        <div class="total" ng-if="!result.total">
           No results were found.
         </div>
-        <div class="total" ng-if="result.limit > 0 && result.total">
-          Found {{::result.total | number}} documents.
+        <div class="total" ng-if="result.total">
+          Found {{result.total | number}} documents.
         </div>
       </div>
     </div>
@@ -87,7 +70,7 @@
   <div class="col-md-4">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <strong>Document sources</strong> <small>{{::sourceFacets.length}}</small>
+        <strong>Document sources</strong> <small>{{sourceFacets.length}}</small>
       </div>
       <ul class="list-group facet-list">
         <li class="list-group-item facet animate toggle"
@@ -96,8 +79,8 @@
           ng-click="query.toggleFilter('source_id', source.id)">
           <span class="badge">{{::source.count | number}}</span>
           <span class="lbl">
-            {{source.label}}
-            <a ng-click="editSource(source, $event)" ng-show="authz.source(authz.WRITE, source.id)">
+            {{::source.label}}
+            <a ng-click="editSource(source, $event)" ng-show="::authz.source(authz.WRITE, source.id)">
               <i class="fa fa-cog"></i>
             </a>
           </span>
@@ -136,15 +119,14 @@
           ng-click="query.toggle('entity', entity.id)">
           <span class="badge">{{::entity.count | number}}</span>
           <entity-icon schema="entity.$schema"></entity-icon>
-          <span class="lbl" uib-tooltip="{{metadata.collections[entity.collection_id].label}}"
-            tooltip-append-to-body="true" tooltip-placement="right">
+          <span class="lbl">
             {{::entity.name}}
           </span>
         </li>
       </ul>
     </div>
 
-    <div class="panel panel-default" ng-repeat="facet in facets">
+    <div class="panel panel-default" ng-repeat="facet in facets track by facet.field">
       <div class="panel-heading">
         <span class="pull-right">
           <a ng-click="query.toggle('facet', facet.field)">
@@ -160,7 +142,7 @@
         </li>
         <li class="list-group-item facet animate toggle"
           ng-repeat="val in facet.values"
-          ng-class="{'active': query.hasFilter(facet.field, val.id)}"
+          ng-class="::{'active': query.hasFilter(facet.field, val.id)}"
           ng-click="query.toggleFilter(facet.field, val.id)">
           <span class="badge">{{::val.count | number}}</span>
           <span class="lbl" uib-tooltip="{{val.label}}" tooltip-append-to-body="true" tooltip-placement="left">
@@ -181,10 +163,10 @@
           in detail.
         </p>
         <a class="btn btn-primary"
-          ng-href="/api/1/query/export?{{query.queryString()}}"
+          ng-href="/api/1/query/export?{{queryString}}"
           download target="_self">
           <i class="fa fa-file-excel-o"></i>
-          Excel file ({{::result.total | number}} results)
+          Excel file ({{result.total | number}} results)
         </a>
       </div>
     </div>
@@ -202,7 +184,7 @@
         <p class="help-block">
           This data format is suited for import into <a href="http://gephi.org">Gephi</a>, an open source network analysis tool. 
         </p>
-        <a ng-href="/api/1/graph?format=gexf&limit=2000&{{::query.queryString()}}" class="btn btn-primary" target="_self"
+        <a ng-href="/api/1/graph?format=gexf&limit=2000&{{queryString}}" class="btn btn-primary" target="_self"
         download="actors.gexf">
           <i class="fa fa-cloud-download"></i>
           Download Graph Exchange XML (GEXF)

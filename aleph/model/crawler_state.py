@@ -18,7 +18,7 @@ class CrawlerState(db.Model):
     crawler_id = db.Column(db.Unicode(), index=True)
     crawler_run = db.Column(db.Unicode(), nullable=True)
     content_hash = db.Column(db.Unicode(65), nullable=True)
-    foreign_id = db.Column(db.Unicode, unique=False, nullable=True)
+    foreign_id = db.Column(db.Unicode, nullable=True)
     status = db.Column(db.Unicode(10), nullable=False)
     error_type = db.Column(db.Unicode(), nullable=True)
     error_message = db.Column(db.Unicode(), nullable=True)
@@ -37,6 +37,17 @@ class CrawlerState(db.Model):
         obj.foreign_id = meta.foreign_id
         obj.content_hash = meta.content_hash
         obj.meta = meta.data
+        db.session.add(obj)
+        return obj
+
+    @classmethod
+    def store_stub(cls, source_id, crawler_id, crawler_run):
+        obj = cls()
+        obj.source_id = source_id
+        obj.crawler_id = crawler_id
+        obj.crawler_run = crawler_run
+        obj.error_type = 'init'
+        obj.status = cls.STATUS_OK
         db.session.add(obj)
         return obj
 
@@ -81,7 +92,7 @@ class CrawlerState(db.Model):
         timeout = (datetime.utcnow() - CrawlerState.TIMEOUT)
         stats['running'] = last_run_time > timeout if last_run_time else False
 
-        q = db.session.query(func.count(cls.id))
+        q = db.session.query(func.count(func.distinct(cls.foreign_id)))
         q = q.filter(cls.crawler_id == crawler_id)
         for section in ['last', 'all']:
             data = {}
@@ -96,6 +107,22 @@ class CrawlerState(db.Model):
         stats['last']['updated'] = last_run_time
         stats['last']['run_id'] = last_run_id
         return stats
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'status': self.status,
+            'crawler_id': self.crawler_id,
+            'crawler_run': self.crawler_run,
+            'content_hash': self.content_hash,
+            'foreign_id': self.foreign_id,
+            'error_type': self.error_type,
+            'error_message': self.error_message,
+            'error_details': self.error_details,
+            'meta': self.meta,
+            'source_id': self.source_id,
+            'created_at': self.created_at
+        }
 
     def __repr__(self):
         return '<CrawlerState(%r,%r)>' % (self.id, self.status)

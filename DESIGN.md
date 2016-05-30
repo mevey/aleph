@@ -129,6 +129,23 @@ De-dupe todo:
 9. update target entity
 
 
+mini-bugs: 
+
+* Country selector
+* Watchlist sorting
+* Watchlist edit when entity save
+
+* [DONE] Watchlist creator directive
+* Alerts code
+* [DONE] Fix up dates
+* ICTY crawler
+* Web crawler
+* Facet label truncation 
+* [DONE] Entities on document pages
+* Analyzers API
+* Email, URL, IP, CC, analyzer
+
+
 -------------
 
 Alert

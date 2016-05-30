@@ -76,6 +76,19 @@ class Crawler(object):
                 os.unlink(file_path)
             raise
 
+    def save_data(self, data):
+        """Store a lump object of data to a temporary file."""
+        fh, file_path = mkstemp()
+        try:
+            fh = os.fdopen(fh, 'w')
+            fh.write(data)
+            fh.close()
+            return file_path
+        except Exception:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            raise
+
     @classmethod
     def get_id(cls):
         name = cls.__module__ + "." + cls.__name__
@@ -134,7 +147,15 @@ class DocumentCrawler(Crawler):
                 'label': self.SOURCE_LABEL or self.SOURCE_ID
             })
             db.session.commit()
+        db.session.add(self._source)
         return self._source
+
+    def execute(self, **kwargs):
+        CrawlerState.store_stub(self.source.id,
+                                self.get_id(),
+                                self.crawler_run)
+        db.session.commit()
+        super(DocumentCrawler, self).execute(**kwargs)
 
     def emit_file(self, meta, file_path, move=False):
         ingest_file(self.source.id, meta.clone(), file_path, move=move)

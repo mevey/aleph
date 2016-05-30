@@ -28,9 +28,15 @@
         </ul>
       </div>
       <div class="btn-group">
-        <a ng-click="createEntity($event)" class="btn btn-primary" ng-disabled="!authz.logged_in()">
+        <a ng-click="createEntity($event)" class="btn btn-primary" ng-disabled="::!authz.logged_in()">
           <i class="fa fa-plus-square" aria-hidden="true"></i>
           Create
+        </a>
+      </div>
+      <div class="btn-group">
+        <a ng-href="/entities/bulk" class="btn btn-primary" ng-disabled="::!authz.logged_in()">
+          <i class="fa fa-plus-square" aria-hidden="true"></i>
+          Bulk
         </a>
       </div>
       <div class="btn-group">
@@ -45,21 +51,15 @@
           Delete
         </a>
       </div>
-      <div class="btn-group" ng-if="authz.is_admin()">
-        <a ng-href="/entities/review" class="btn btn-primary">
-          <i class="fa fa-link" aria-hidden="true"></i>
-          Review
-        </a>
-      </div>
     </div>
   </div>
 </div>
 
 <div class="row">
   <div class="col-md-8">
-    <div class="alert alert-danger" role="alert" ng-if="error">
+    <div class="alert alert-danger" role="alert" ng-if="result.error">
       <strong>An error occurred while running your search.</strong>
-      {{::error.info.reason || error.message}}
+      {{result.error.info.reason || result.error.message}}
     </div>
 
     <div class="alert alert-suggest" ng-if="result.limit > 0 && !result.total && authz.logged_in()">
@@ -69,7 +69,7 @@
 
     <div>
       <table ng-if="result.results.length" class="table table-striped">
-        <tr ng-repeat-start="entity in result.results">
+        <tr ng-repeat-start="entity in result.results track by entity.id">
           <td width="1%" ng-if="authz.logged_in()">
             <input type="checkbox" ng-disabled="!authz.entityWrite(entity)" ng-model="entity.selected">
           </td>
@@ -121,7 +121,7 @@
           <response-pager response="result" load="loadOffset(offset)"></response-pager>
         </div>
         <div class="total" ng-if="result.limit > 0 && result.total">
-          Found {{::result.total | number}} entities.
+          Found {{result.total | number}} entities.
         </div>
       </div>
     </div>
@@ -131,7 +131,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <strong>Countries</strong>
-        <small>{{::jurisdictionFacet.length}}</small>
+        <small>{{jurisdictionFacet.length}}</small>
       </div>
       <ul class="list-group facet-list">
         <li class="list-group-item facet empty" ng-if="!jurisdictionFacet.length">
@@ -152,7 +152,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <strong>Watchlists</strong>
-        <small>{{::collectionFacet.length}}</small>
+        <small>{{collectionFacet.length}}</small>
       </div>
       <ul class="list-group facet-list">
         <li class="list-group-item facet animate toggle"
@@ -173,7 +173,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <strong>Types</strong>
-        <small>{{::schemaFacet.length}}</small>
+        <small>{{schemaFacet.length}}</small>
       </div>
       <ul class="list-group facet-list">
         <li class="list-group-item facet empty" ng-if="!schemaFacet.length">

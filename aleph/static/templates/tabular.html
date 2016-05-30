@@ -25,7 +25,8 @@
         </thead>
         <tbody>
           <tr ng-repeat="row in rows.results" ng-class="{'highlight': isHighlighted(row)}">
-            <td ng-repeat="col in table.columns" ng-class="getClass(row, col)" ng-bind-html="::formatCell(row, col)"></td>
+            <td ng-repeat="col in table.columns" ng-class="::getClass(row, col)"
+                ng-bind-html="::formatCell(row, col)"></td>
           </tr>
         </tbody>
       </table>
@@ -53,5 +54,6 @@
     </form>
 
     <metadata-sidebar doc="doc"></metadata-sidebar>
+    <entity-references references="references"></entity-references>
   </div>
 </div>

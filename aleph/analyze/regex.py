@@ -1,98 +1,50 @@
 import re
 import logging
-from time import time
-from threading import RLock
-from itertools import count
-from collections import defaultdict
-from sqlalchemy.orm import joinedload
 
-from aleph.core import db
-from aleph.text import normalize_strong
-from aleph.model import Reference, Entity
 from aleph.analyze.analyzer import Analyzer
-
+# https://github.com/daviddrysdale/python-phonenumbers
+# https://gist.github.com/dideler/5219706
 
 log = logging.getLogger(__name__)
-lock = RLock()
-BATCH_SIZE = 1000
 
 
-class EntityCache(object):
+class RegexAnalyzer(Analyzer):
+    REGEX = None
+    FLAG = None
 
-    def __init__(self):
-        self.latest = None
-        self.matches = {}
-        self.regexes = []
+    def prepare(self):
+        self.matches = []
+        self.regex = re.compile(self.REGEX, self.FLAG)
 
-    def generate(self):
-        with lock:
-            self._generate()
-
-    def _generate(self):
-        latest = Entity.latest()
-        if self.latest is not None and self.latest >= latest:
-            return
-
-        self.latest = latest
-        self.matches = defaultdict(set)
-
-        q = Entity.all()
-        q = q.options(joinedload('other_names'))
-        q = q.filter(Entity.state == Entity.STATE_ACTIVE)
-        for entity in q:
-            for term in entity.regex_terms:
-                self.matches[normalize_strong(term)].add(entity.id)
-
-        self.regexes = []
-        terms = self.matches.keys()
-        terms = [t for t in terms if len(t) > 2]
-        for i in count(0):
-            terms_slice = terms[i * BATCH_SIZE:(i + 1) * BATCH_SIZE]
-            if not len(terms_slice):
-                break
-            body = '|'.join(terms_slice)
-            rex = re.compile('( |^)(%s)( |$)' % body)
-            # rex = re.compile('(%s)' % body)
-            self.regexes.append(rex)
-
-        log.info('Generating entity tagger: %r (%s terms)',
-                 latest, len(terms))
+    def on_text(self, text):
+        for mobj in self.regex.finditer(text):
+            self.matches.append(mobj)
 
 
-class RegexEntityAnalyzer(Analyzer):
+class EMailAnalyzer(RegexAnalyzer):
+    REGEX = '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}'
+    FLAG = re.IGNORECASE
 
-    cache = EntityCache()
-    origin = 'regex'
+    def finalize(self):
+        matches = set([m.group(0) for m in self.matches])
+        if len(matches):
+            log.info("Found emails: %r", matches)
 
-    def analyze(self, document, meta):
-        begin_time = time()
-        self.cache.generate()
-        entities = defaultdict(int)
-        for text, rec in document.text_parts():
-            text = normalize_strong(text)
-            if text is None or len(text) <= 2:
-                continue
-            for rex in self.cache.regexes:
-                for match in rex.finditer(text):
-                    match = match.group(2)
-                    # match = match.group(1)
-                    for entity_id in self.cache.matches.get(match, []):
-                        entities[entity_id] += 1
+        emails = self.meta.get('emails') or []
+        emails.extend(matches)
+        self.meta['emails'] = emails
 
-        Reference.delete_document(document.id, origin=self.origin)
-        for entity_id, weight in entities.items():
-            ref = Reference()
-            ref.document_id = document.id
-            ref.entity_id = entity_id
-            ref.origin = self.origin
-            ref.weight = weight
-            db.session.add(ref)
-        self.save(document, meta)
 
-        duration_time = int((time() - begin_time) * 1000)
-        if len(entities):
-            log.info("Regex tagged %r with %d entities (%sms)",
-                     document, len(entities), duration_time)
-        else:
-            log.info("Regex found no entities on %r (%sms)",
-                     document, duration_time)
+class URLAnalyzer(RegexAnalyzer):
+    # https://gist.github.com/uogbuji/705383
+    REGEX = ur'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?\xab\xbb\u201c\u201d\u2018\u2019]))'  # noqa
+    FLAG = re.IGNORECASE
+
+    def finalize(self):
+        matches = set([m.group(0) for m in self.matches])
+        if len(matches):
+            log.info("Found URLs: %r", matches)
+
+        urls = self.meta.get('urls') or []
+        urls.extend(matches)
+        self.meta['urls'] = urls

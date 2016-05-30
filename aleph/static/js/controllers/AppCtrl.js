@@ -1,23 +1,15 @@
-aleph.controller('AppCtrl', ['$scope', '$rootScope', '$location', '$route', '$http', '$uibModal', '$q',
-                             'Session', 'Alert', 'Metadata',
-    function($scope, $rootScope, $location, $route, $http, $uibModal, $q, Session, Alert, Metadata) {
+aleph.controller('AppCtrl', ['$scope', '$rootScope', '$location', '$anchorScroll', '$route', '$http', '$uibModal', '$q', 'Alert', 'Metadata',
+    function($scope, $rootScope, $location, $anchorScroll, $route, $http, $uibModal, $q, Alert, Metadata) {
 
   $scope.session = {logged_in: false};
   $scope.routeLoaded = false;
   $scope.routeFailed = false;
 
-  Metadata.get().then(function(context) {
-    $scope.metadata = context;
-    $scope.session = context.session;
+  Metadata.get().then(function(metadata) {
+    $scope.session = metadata.session;
   });
 
   $rootScope.$on("$routeChangeStart", function (event, next, current) {
-    Session.get().then(function(session) {
-      if (next.$$route && next.$$route.loginRequired && !session.logged_in) {
-        $location.search({});
-        $location.path('/');
-      }
-    });
     $scope.reportLoading(true);
   });
 
@@ -29,6 +21,12 @@ aleph.controller('AppCtrl', ['$scope', '$rootScope', '$location', '$route', '$ht
     $scope.routeFailed = true;
   });
 
+  $scope.keyDownNotify = function($event) {
+    if(angular.lowercase($event.target.tagName) == 'body') {
+      $scope.$broadcast('key-pressed', $event.keyCode);
+    }
+  };
+
   $rootScope.reportError = function(message) {
     $scope.routeFailed = true;
   };
@@ -36,6 +34,7 @@ aleph.controller('AppCtrl', ['$scope', '$rootScope', '$location', '$route', '$ht
   $rootScope.reportLoading = function(flag) {
     $scope.routeLoaded = !flag;
     if (flag) {
+      $anchorScroll();
       $scope.routeFailed = false;
     }
   };
@@ -45,7 +44,10 @@ aleph.controller('AppCtrl', ['$scope', '$rootScope', '$location', '$route', '$ht
     var d = $uibModal.open({
         templateUrl: 'templates/profile.html',
         controller: 'ProfileCtrl',
-        backdrop: true
+        backdrop: true,
+        resolve: {
+          metadata: loadMetadata
+        }
     });
   };
 

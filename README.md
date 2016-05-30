@@ -42,7 +42,10 @@ $ cp aleph.env.tmpl aleph.env
 $ docker-compose up -d
 $ docker-compose run worker /bin/bash
 # init the database (this will also delete it, hence the name):
-root@worker# aleph upgrade
+root@worker# aleph init
+# if you run into errors due to pre-existing DB objects, try:
+# WARNING: this will delete all of your DB and ElasticSearch index.
+root@worker# aleph evilshit
 ```
 
 This will launch containers for PostgreSQL and ElasticSearch as well as for the applications front- and backend. The application should become available at ``http://localhost:13376``. You can proxy this port to the public web, or install an HTTP cache to retain static assets (make sure to set ``CACHE = True`` in the settings file.
@@ -368,6 +371,7 @@ root@worker# aleph evilshit
 ``aleph`` is one of many document processing and search tools targeted at journalists, activists etc. Many of these are similar in scope, ``aleph`` aims to distinguish itself by providing entity cross-referencing and seamless support for both tabular and textual data.
 
 * [DocumentCloud](https://github.com/documentcloud), the biggest document hosting site for journalistic content, including OCR and organisation- and project-level access control.
+* [DARPA MEMEX](http://opencatalog.darpa.mil/MEMEX.html#), a coordinated research to make domain-specific deep web search engines.
 * [Transparency Toolkit](https://github.com/TransparencyToolkit), LookingGlass is an indexing server for JSON documents with support for theming, used mainly for scraped social media profiles.
 * [resourcecontracts.org](https://github.com/developmentseed/rw-contracts), visual browser for resource (oil, mining, etc.) contract documents.
 * [mma-dexter](https://github.com/Code4SA/mma-dexter), used by Media Monitoring Africa to do content classification and guided entity extraction of South African media.
@@ -376,6 +380,7 @@ root@worker# aleph evilshit
 * [ICIJ Extract](https://github.com/icij/extract), Java-based OCR and content extraction pipeline used for large-scale leaks.
 * [nltk](http://www.nltk.org/), [patterns](http://www.clips.ua.ac.be/pattern)
 * [OpenCalais](http://www.opencalais.com/), LingPipe, AlchemyAPI
+* Omecca, eprints, fedora, dspace
 
 ## License
 

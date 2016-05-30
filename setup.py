@@ -42,8 +42,10 @@ setup(
         ],
         'aleph.analyzers': [
             'lang = aleph.analyze.language:LanguageAnalyzer',
-            'regex = aleph.analyze.regex:RegexEntityAnalyzer',
-            'polyglot = aleph.analyze.polyglot:PolyglotEntityAnalyzer'
+            'emails = aleph.analyze.regex:EMailAnalyzer',
+            'urls = aleph.analyze.regex:URLAnalyzer',
+            'regex = aleph.analyze.regex_entity:RegexEntityAnalyzer',
+            'polyglot = aleph.analyze.polyglot_entity:PolyglotEntityAnalyzer'
         ],
         'aleph.crawlers': [
             # 'stub = aleph.crawlers.stub:StubCrawler',

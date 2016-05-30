@@ -127,18 +127,32 @@ def index(foreign_id=None):
         if source is None:
             raise ValueError("No such source: %r" % foreign_id)
         q = q.filter(Document.source_id == source.id)
-    else:
-        delete_index()
-        init_search()
     for doc_id, in q:
         index_document.delay(doc_id)
-    reindex_entities()
+    if foreign_id is None:
+        reindex_entities()
+
+
+@manager.command
+def resetindex():
+    """Re-create the ES index configuration, dropping all data."""
+    delete_index()
+    init_search()
 
 
 @manager.command
 def indexentities(foreign_id=None):
     """Re-index all the entities."""
     reindex_entities()
+
+
+@manager.command
+def init():
+    """Create or upgrade the search index and database."""
+    upgrade_db()
+    init_search()
+    upgrade_search()
+    install_analyzers()
 
 
 @manager.command
@@ -156,11 +170,20 @@ def installdata():
 
 @manager.command
 def evilshit():
-    """Delete all data and recreate the database."""
-    db.drop_all()
-    upgrade_db()
+    """EVIL: Delete all data and recreate the database."""
     delete_index()
-    init_search()
+    db.drop_all()
+    from sqlalchemy import MetaData, inspect
+    from sqlalchemy.dialects.postgresql import ENUM
+    metadata = MetaData()
+    metadata.bind = db.engine
+    metadata.reflect()
+    for table in metadata.sorted_tables:
+        table.drop(checkfirst=True)
+    for enum in inspect(db.engine).get_enums():
+        enum = ENUM(name=enum['name'])
+        enum.drop(bind=db.engine, checkfirst=True)
+    init()
 
 
 def main():
