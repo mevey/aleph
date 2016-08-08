@@ -1,5 +1,5 @@
-$aleph-theme: #982022 !default;
-$aleph-dark: #3a4953 !default;
+$aleph-theme: #1b69a3 !default;
+$aleph-dark: #333 !default;
 $aleph-highlights: yellow !default;
 
 @import "custom";
@@ -32,7 +32,7 @@ html {
 
 body {
     height: 100%;
-    background-color: $text-muted;
+    background-color: #000;
     /*
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -49,11 +49,16 @@ footer {
     padding-top: 1em;
     padding-bottom: 1em;
     color: white;
+    background: #000000 url("/static/images/ancir-footer.png") repeat;
+    background-position-y: -100px;
 
     a {
         color: white;
         text-decoration: underline;
-    }    
+    }
+    .copyright container {
+        color: #fff;
+    }
 }
 
 @import "loading_bar";

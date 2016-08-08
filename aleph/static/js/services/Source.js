@@ -9,7 +9,7 @@ aleph.factory('Source', ['$uibModal', 'Metadata', function($uibModal, Metadata) 
         backdrop: true,
         size: 'md',
         resolve: {
-          source: ['$q', '$http', 'Role', function($q, $http, Role) {
+          source: ['$q', '$https', 'Role', function($q, $https, Role) {
             var dfd = $q.defer();
             Role.getAll().then(function() {
               $http.get('/api/1/sources/' + source.id).then(function(res) {
