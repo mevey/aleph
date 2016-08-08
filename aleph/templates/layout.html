@@ -116,21 +116,42 @@
     </div>
 
     <footer>
-      <div class="container-fluid">
+      <div class="container">
         <div class="row">
-          <div class="col-md-12">
-            <p class="pull-right">
+          <div class="col-md-3 col-md-offset-4 col-sm-4 col-sm-offset-4 col-xs-6">
+            <p>
               <strong>&alefsym;</strong>
               aleph search engine &middot;
+            </p>
+            <p>
               <i class="fa fa-github-square"></i>
               <a href="https://github.com/pudo/aleph">source code</a>
               &middot;
+            </p>
+            <p>
+              <i class="fa fa-external-link"></i>
               <a href="/help/api">api documentation</a>
+            </p>
+            <p>
+              <i class="fa fa-github-square"></i>
+              <a href="https://investigativecenters.org/">about ANCIR</a>
+              &middot;
+            </p>
+            <p>
+              <i class="fa fa-external-link"></i>
+              <a href="https://investigativecenters.org/">support ANCIR</a>
             </p>
           </div>
         </div>
       </div>
     </footer>
+     <div class="copyright container">
+        <div class="row">
+          <div class="col-md-12 text-center" style="color:#fff;">
+            <p>© ANCIR <script>document.write(new Date().getFullYear())</script> ANCIR is being incubated by <a href="http://www.codeforafrica.org" target="_blank" class="cfafrica">Code for Africa</a></p>
+          </div>
+        </div>
+      </div> <!-- /.ancir -->
 
     {% for path, tmpl in templates %}
       <script id="{{path}}" type="text/ng-template">{{ tmpl | safe }}</script>

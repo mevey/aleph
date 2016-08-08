@@ -5,10 +5,10 @@ DEBUG = True
 ASSETS_DEBUG = True
 CACHE = True
 
-APP_TITLE = 'Aleph'
+APP_TITLE = 'Search'
 APP_NAME = 'aleph'
-APP_LOGO = '/static/images/aleph_small.png'
-APP_FAVICON = '/static/images/aleph_small.png'
+APP_LOGO = '/static/images/ancir-tiny-logo.png'
+APP_FAVICON = '/static/images/favicon.ico'
 
 ARCHIVE_TYPE = 'file'
 ARCHIVE_AWS_KEY_ID = env.get('AWS_ACCESS_KEY_ID')
