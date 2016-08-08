@@ -1,27 +1,15 @@
-<<<<<<< HEAD
 import requests
 from aleph.tests.util import TestCase
 from aleph.crawlers import blacklight
 
 
-=======
-from aleph.tests.util import TestCase
-from aleph.crawlers.crawler import Crawler
-from aleph.crawlers import blacklight
-
->>>>>>> 4f4f17409bacc3303038390a5857eae8ac2d9d5c
 class CrawlersTestCase(TestCase):
 
     def setUp(self):
         super(CrawlersTestCase, self).setUp()
         self.demo_url = "http://demo.projectblacklight.org/"
-<<<<<<< HEAD
         self.bl = blacklight.BlacklightCrawler()
         self.pagecount = self.bl.get_page_count(self.demo_url)
-=======
-        self.bl = blacklight.BlacklightCrawler(Crawler)
-        
->>>>>>> 4f4f17409bacc3303038390a5857eae8ac2d9d5c
 
     def test_blacklight_crawldocument(self,):
         resp = self.bl.crawl_document(self.demo_url, '1')
@@ -29,7 +17,6 @@ class CrawlersTestCase(TestCase):
         self.assertEqual(resp, True)
 
     def test_blacklight_get_page_count(self,):
-<<<<<<< HEAD
         self.assertTrue(str(self.pagecount).isdigit())
 
     def test_blacklight_sources(self,):
@@ -64,7 +51,3 @@ class CrawlersTestCase(TestCase):
             except KeyError:
                 pass
                 '''
-=======
-        resp = self.bl.get_page_count(self.demo_url)
-        self.assertTrue(str(resp).isdigit())
->>>>>>> 4f4f17409bacc3303038390a5857eae8ac2d9d5c
